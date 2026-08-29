@@ -21,6 +21,11 @@ class Settings(BaseSettings):
     # --- Core ---
     environment: str = Field(default="development", alias="ENVIRONMENT")
 
+    # IANA name used to decide what "today" is for recurring-task generation
+    # and stats day/week bucketing. The routine (gym at 07:00, 5 prayers) is
+    # local, so this should be the user's zone, not the server's UTC.
+    timezone: str = Field(default="Asia/Kolkata", alias="TIMEZONE")
+
     # --- Database ---
     # Accepts the plain postgresql:// or postgres:// URL that Supabase/Neon hand
     # out; normalized to the async driver form in the validator below.
