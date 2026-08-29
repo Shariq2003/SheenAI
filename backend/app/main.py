@@ -12,15 +12,18 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from app.api.router import api_router
+from app.core import keepalive
 from app.core.config import settings
 from app.core.database import engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: nothing to do yet. Schema is managed by Alembic (step 2).
+    # Startup: begin the keep-alive self-ping (no-op unless a target URL is set).
+    keepalive.start(app)
     yield
-    # Shutdown: release the connection pool cleanly.
+    # Shutdown: stop the keep-alive task and release the connection pool.
+    await keepalive.stop(app)
     await engine.dispose()
 
 

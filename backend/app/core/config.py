@@ -47,6 +47,22 @@ class Settings(BaseSettings):
         alias="CORS_ORIGINS",
     )
 
+    # --- Keep-alive (defeats Render free-tier spin-down after 15 min idle) ---
+    # An in-process task pings the app's own /health every interval. It uses
+    # KEEPALIVE_URL if set, otherwise RENDER_EXTERNAL_URL (Render injects this
+    # automatically). With neither set (local dev) the task never starts.
+    keepalive_url: str = Field(default="", alias="KEEPALIVE_URL")
+    render_external_url: str = Field(default="", alias="RENDER_EXTERNAL_URL")
+    keepalive_interval_seconds: int = Field(
+        default=600, alias="KEEPALIVE_INTERVAL_SECONDS"
+    )
+
+    @property
+    def self_ping_url(self) -> str | None:
+        """Absolute URL of the health endpoint to self-ping, or None to disable."""
+        base = (self.keepalive_url or self.render_external_url).strip().rstrip("/")
+        return f"{base}/health" if base else None
+
     @field_validator("database_url")
     @classmethod
     def _normalize_async_driver(cls, v: str) -> str:

@@ -117,11 +117,17 @@ async def compute_time_breakdown(
     user_id: int,
     date_from: date,
     date_to: date,
+    category_id: int | None = None,
 ) -> TimeBreakdownStats:
+    params: dict = {"uid": user_id, "df": date_from, "dt": date_to}
+    cat_filter = ""
+    if category_id is not None:
+        cat_filter = "WHERE c.id = :cid"
+        params["cid"] = category_id
     rows = (
         await db.execute(
             text(
-                """
+                f"""
                 SELECT
                   c.id AS category_id,
                   c.name AS category,
@@ -145,11 +151,12 @@ async def compute_time_breakdown(
                   ON t.category_id = c.id
                  AND t.user_id = :uid
                  AND t.scheduled_date BETWEEN :df AND :dt
+                {cat_filter}
                 GROUP BY c.id, c.name, c.color
                 ORDER BY c.id
                 """
             ),
-            {"uid": user_id, "df": date_from, "dt": date_to},
+            params,
         )
     ).all()
 
@@ -184,6 +191,7 @@ async def compute_completion(
     date_from: date,
     date_to: date,
     granularity: str = "day",
+    category_id: int | None = None,
 ) -> CompletionStats:
     if granularity not in ("day", "week"):
         raise ValueError("granularity must be 'day' or 'week'")
@@ -193,6 +201,11 @@ async def compute_completion(
         if granularity == "day"
         else "date_trunc('week', t.scheduled_date)::date"
     )
+    params: dict = {"uid": user_id, "df": date_from, "dt": date_to}
+    cat_filter = ""
+    if category_id is not None:
+        cat_filter = "AND t.category_id = :cid"
+        params["cid"] = category_id
     rows = (
         await db.execute(
             text(
@@ -207,11 +220,12 @@ async def compute_completion(
                 FROM tasks t
                 WHERE t.user_id = :uid
                   AND t.scheduled_date BETWEEN :df AND :dt
+                  {cat_filter}
                 GROUP BY period_start
                 ORDER BY period_start
                 """
             ),
-            {"uid": user_id, "df": date_from, "dt": date_to},
+            params,
         )
     ).all()
 
@@ -280,12 +294,15 @@ async def compute_all(
     date_from: date | None = None,
     date_to: date | None = None,
     granularity: str = "day",
+    category_id: int | None = None,
 ) -> StatsResponse:
     start, end = resolve_window(date_from, date_to)
     return StatsResponse(
         streaks=await compute_streaks(db, user_id, today_local()),
-        time_breakdown=await compute_time_breakdown(db, user_id, start, end),
+        time_breakdown=await compute_time_breakdown(
+            db, user_id, start, end, category_id
+        ),
         completion=await compute_completion(
-            db, user_id, start, end, granularity
+            db, user_id, start, end, granularity, category_id
         ),
     )

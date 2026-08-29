@@ -58,6 +58,20 @@ asserts each step, and deletes its own test user. `--base-url` to point
 elsewhere, `--keep` to leave the test user. `scripts/curl_walkthrough.md` has
 the same flow as copy-paste curl.
 
+## Keep-alive (Render free tier)
+
+Render spins a free web service down after ~15 min with no inbound requests.
+Two layers keep it warm:
+
+1. **In-process self-ping** (`app/core/keepalive.py`, wired into the lifespan).
+   It GETs the service's own `/health` every `KEEPALIVE_INTERVAL_SECONDS`
+   (default 600). Target URL comes from `KEEPALIVE_URL`, else
+   `RENDER_EXTERNAL_URL` (Render injects this) — so on Render it just works;
+   locally, with neither set, it does nothing.
+2. **External cron** (`.github/workflows/keepalive.yml`) — every 13 min, hits a
+   `KEEPALIVE_URL` **repo variable** (`Settings → Secrets and variables →
+   Actions → Variables`). This one also *wakes* an instance that already slept.
+
 ## Endpoints so far
 
 | Method | Path         | Purpose                                  |
@@ -70,9 +84,12 @@ the same flow as copy-paste curl.
 | GET    | `/auth/me`      | current user (send `Authorization: Bearer <token>`) |
 | GET    | `/categories`   | list the 6 categories                |
 | GET    | `/tasks`        | list; `?date= &date_from= &date_to= &category_id= &status=` |
+| GET    | `/tasks/{id}`   | single task (owned)                  |
 | POST   | `/tasks`        | create a manual task                 |
 | PATCH  | `/tasks/{id}`   | partial update (e.g. `{"status":"done"}`) |
 | DELETE | `/tasks/{id}`   | delete (204)                         |
+| GET    | `/recurring-templates` | the user's recurring templates |
+| POST   | `/recurring-templates` | create one; materializes today's task if it runs today |
 | GET    | `/stats`        | **combined** streaks + time-breakdown + completion; `?date_from= &date_to= &granularity=day\|week` |
 | GET    | `/stats/streaks` · `/stats/time-breakdown` · `/stats/completion` | same data individually (debug) |
 | GET    | `/docs`         | Swagger UI                            |

@@ -32,9 +32,10 @@ async def get_stats(
     date_from: DateFrom = None,
     date_to: DateTo = None,
     granularity: Granularity = "day",
+    category_id: Annotated[int | None, Query()] = None,
 ) -> StatsResponse:
     return await stats_service.compute_all(
-        db, user.id, date_from, date_to, granularity
+        db, user.id, date_from, date_to, granularity, category_id
     )
 
 

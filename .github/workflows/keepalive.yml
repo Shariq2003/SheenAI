@@ -1,0 +1,30 @@
+name: keep-alive
+
+# Pings the deployed backend so Render's free tier doesn't spin it down after
+# ~15 min idle. This external pinger also *wakes* an instance that already
+# slept — the in-process self-ping (app/core/keepalive.py) can't.
+#
+# Setup: add a repo variable KEEPALIVE_URL = https://<your-service>.onrender.com/health
+#   (Settings -> Secrets and variables -> Actions -> Variables -> New variable)
+#
+# Caveats: GitHub cron can be delayed several minutes under load, and a
+# scheduled workflow is auto-disabled after 60 days with no repo commits.
+
+on:
+  schedule:
+    - cron: '*/13 * * * *'
+  workflow_dispatch: {}
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hit the health endpoint
+        run: |
+          URL="${{ vars.KEEPALIVE_URL }}"
+          if [ -z "$URL" ]; then
+            echo "KEEPALIVE_URL repo variable is not set — skipping."
+            exit 0
+          fi
+          echo "Pinging $URL"
+          curl -fsS --max-time 30 --retry 3 --retry-delay 10 "$URL" && echo " OK"
