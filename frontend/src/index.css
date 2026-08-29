@@ -1,0 +1,109 @@
+@import 'tailwindcss';
+
+/* ------------------------------------------------------------------ *
+ * Design tokens — cool, deep dark. Category hues come from the
+ * data-viz reference palette (dark categorical set), validated on
+ * the #111725 surface.
+ * ------------------------------------------------------------------ */
+:root {
+  color-scheme: dark;
+
+  --bg: #0a0e17; /* page plane */
+  --surface-1: #111725; /* cards */
+  --surface-2: #161d2e; /* raised / hover */
+  --border: #1e2536;
+  --border-strong: #2c3547;
+
+  --ink: #f1f5f9;
+  --ink-2: #9aa7bd;
+  --ink-3: #64748b;
+
+  --brand: #6366f1; /* indigo accent */
+  --brand-soft: #6366f11f;
+
+  /* status */
+  --ok: #16b364;
+  --warn: #f5a524;
+  --danger: #f04438;
+
+  --radius: 0.75rem;
+}
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background:
+    radial-gradient(60rem 40rem at 100% -10%, #1b2440 0%, transparent 60%),
+    radial-gradient(50rem 40rem at -10% 0%, #17223d 0%, transparent 55%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink);
+  font-family:
+    'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto,
+    Helvetica, Arial, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+}
+
+input,
+select,
+textarea,
+button {
+  color-scheme: dark;
+  font-family: inherit;
+}
+
+/* tasteful scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--border-strong) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: var(--border-strong);
+  border-radius: 999px;
+}
+
+/* motion */
+@keyframes sheen-fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+@keyframes sheen-pop {
+  0% {
+    transform: scale(0.6);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+.animate-fade-in {
+  animation: sheen-fade-in 0.25s ease-out both;
+}
+.animate-pop {
+  animation: sheen-pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-pop {
+    animation: none;
+  }
+}
