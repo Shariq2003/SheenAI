@@ -82,6 +82,11 @@ async def list_tasks(
     return list((await db.execute(stmt)).scalars().all())
 
 
+@router.get("/{task_id}", response_model=TaskOut)
+async def get_task(task_id: int, user: CurrentUser, db: DbSession) -> Task:
+    return await _get_owned_task(db, task_id, user.id)
+
+
 @router.post("", response_model=TaskOut, status_code=status.HTTP_201_CREATED)
 async def create_task(
     payload: TaskCreate, user: CurrentUser, db: DbSession

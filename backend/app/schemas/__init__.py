@@ -7,6 +7,10 @@ from app.schemas.auth import (
     UserOut,
 )
 from app.schemas.category import CategoryOut
+from app.schemas.recurring import (
+    RecurringTemplateCreate,
+    RecurringTemplateOut,
+)
 from app.schemas.stats import (
     CompletionStats,
     StatsResponse,
@@ -21,6 +25,8 @@ __all__ = [
     "TokenResponse",
     "UserOut",
     "CategoryOut",
+    "RecurringTemplateCreate",
+    "RecurringTemplateOut",
     "TaskCreate",
     "TaskOut",
     "TaskUpdate",
