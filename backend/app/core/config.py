@@ -43,7 +43,7 @@ class Settings(BaseSettings):
 
     # --- CORS ---
     cors_origins: str = Field(
-        default="http://localhost:5173,http://127.0.0.1:5173, https://sheenai.onrender.com",
+        default="http://localhost:5173,http://127.0.0.1:5173,https://sheenai.vercel.app",
         alias="CORS_ORIGINS",
     )
 
