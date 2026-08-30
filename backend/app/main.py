@@ -6,7 +6,6 @@ Run locally with:
 Interactive docs at http://localhost:8000/docs
 """
 
-import logging
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
@@ -17,18 +16,10 @@ from app.core import keepalive
 from app.core.config import settings
 from app.core.database import engine
 
-log = logging.getLogger("uvicorn.error")
-
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Startup: log the effective CORS config so a 400 on preflight is easy to
-    # diagnose from the deploy logs, then begin the keep-alive self-ping.
-    log.info(
-        "CORS allow_origins=%s allow_origin_regex=%r",
-        settings.cors_origins_list,
-        settings.cors_origin_regex or None,
-    )
+    # Startup: begin the keep-alive self-ping (no-op unless a target URL is set).
     keepalive.start(app)
     yield
     # Shutdown: stop the keep-alive task and release the connection pool.
@@ -46,7 +37,6 @@ app = FastAPI(
 app.add_middleware(
     CORSMiddleware,
     allow_origins=settings.cors_origins_list,
-    allow_origin_regex=settings.cors_origin_regex or None,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
