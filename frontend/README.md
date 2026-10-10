@@ -1,6 +1,6 @@
 # SheenAI — Frontend
 
-React 19 + Vite 8 + TypeScript + Tailwind CSS v4. See `../PLAN.md` for the spec.
+React 19 + Vite 8 + TypeScript + Tailwind CSS v4. See the [project README](../README.md) for the feature overview and architecture.
 
 **Dark theme globally, mobile-first responsive** — the app is used from a phone,
 so every screen stacks on narrow viewports (tables become card lists) and
@@ -40,23 +40,34 @@ already allows `localhost:5173`.
 
 ```
 src/
-├── main.tsx            # entry
-├── App.tsx             # <BrowserRouter> + route table
-├── index.css           # @import "tailwindcss" + base styles
+├── main.tsx              # entry
+├── App.tsx               # <BrowserRouter> + route table, <Toaster>
+├── index.css             # @import "tailwindcss" + base styles
 ├── lib/
-│   ├── api.ts          # fetch wrapper: JWT header, query params, ApiError, 401 -> logout
-│   └── types.ts        # TS mirrors of the backend schemas
+│   ├── api.ts            # fetch wrapper: JWT header, query params, ApiError, 401 -> logout
+│   ├── types.ts          # TS mirrors of the backend schemas
+│   ├── parseTime.ts      # natural-language time parsing for Quick Add
+│   ├── useCategories.ts  # cached categories hook
+│   ├── theme.ts          # category colours & icons
+│   ├── format.ts         # time/date formatting helpers
+│   ├── notify.ts         # toast helpers (sonner)
+│   └── cn.ts             # clsx + tailwind-merge
 ├── auth/
-│   ├── AuthContext.tsx # <AuthProvider> + useAuth(): user, status, login, signup, logout
-│   └── RequireAuth.tsx # route guard -> redirects to /signin, remembers intended path
+│   ├── AuthContext.tsx   # <AuthProvider> + useAuth(): user, status, login, signup, logout
+│   ├── RequireAuth.tsx   # guard -> redirects to /signin, remembers intended path
+│   └── RedirectIfAuthed.tsx  # keeps signed-in users away from /signin & /signup
 ├── components/
-│   ├── Layout.tsx      # nav shell for authed pages
-│   └── AuthForm.tsx    # shared sign-in / sign-up form
+│   ├── Layout.tsx        # nav shell (bottom tab bar on mobile, top nav on desktop)
+│   ├── QuickAdd.tsx      # one-line task entry
+│   ├── TaskTimeline.tsx  # time-ordered task timeline
+│   ├── AuthForm.tsx      # shared sign-in / sign-up form
+│   └── ui/               # Button, Card, Input, Select, Badge, Menu, Ring, Segmented,
+│                         # Skeleton, Spinner, EmptyState
 └── pages/
-    ├── SignIn.tsx  SignUp.tsx      # functional
-    ├── TaskList.tsx                # live data, minimal — real table in step 9b
-    ├── TaskForm.tsx                # stub — step 9c
-    └── Dashboard.tsx               # live /stats headline numbers — charts in step 9d
+    ├── SignIn.tsx  SignUp.tsx
+    ├── TaskList.tsx      # today's timeline + filters
+    ├── TaskForm.tsx      # create / edit a task
+    └── Dashboard.tsx     # streaks, time breakdown & completion charts (lazy-loaded)
 ```
 
 ## Routes
