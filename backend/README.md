@@ -1,25 +1,32 @@
 # SheenAI — Backend
 
-FastAPI + async SQLAlchemy + PostgreSQL. See `../PLAN.md` for the full spec.
+FastAPI + async SQLAlchemy + PostgreSQL. See the [project README](../README.md) for the feature overview and architecture.
 
 ## Layout
 
 ```
 backend/
 ├── app/
-│   ├── main.py            # FastAPI app + entrypoint
+│   ├── main.py              # FastAPI app, lifespan (keep-alive), CORS
 │   ├── api/
-│   │   ├── router.py      # aggregates all sub-routers
-│   │   └── routes/
-│   │       └── health.py  # /health, /health/db
+│   │   ├── router.py        # aggregates all sub-routers
+│   │   ├── deps.py          # get_db, current user (+ daily recurring sync)
+│   │   └── routes/          # health, auth, categories, tasks, recurring, stats
 │   ├── core/
-│   │   ├── config.py      # env-driven settings (pydantic-settings)
-│   │   └── database.py    # async engine, session factory, get_db dependency
-│   ├── models/            # ORM models: user, category, recurring_template, task
-│   ├── db/seed.py         # seeds the 6 categories (idempotent)
-│   └── schemas/           # Pydantic schemas  (step 3)
-├── alembic/               # async migration env + versions/
-├── alembic.ini            # url injected at runtime from DATABASE_URL
+│   │   ├── config.py        # env-driven settings (pydantic-settings)
+│   │   ├── database.py      # async engine, session factory
+│   │   ├── security.py      # bcrypt hashing + JWT helpers
+│   │   ├── time.py          # "today" in the configured TIMEZONE
+│   │   └── keepalive.py     # in-process self-ping for Render free tier
+│   ├── models/              # ORM: user, category, recurring_template, task, enums
+│   ├── schemas/             # Pydantic request/response models
+│   ├── services/
+│   │   ├── recurring.py     # default templates + idempotent daily task generation
+│   │   └── stats.py         # streaks, time breakdown, completion (pure SQL)
+│   └── db/seed.py           # seeds the 6 categories (idempotent)
+├── alembic/                 # async migration env + versions/
+├── alembic.ini              # url injected at runtime from DATABASE_URL
+├── scripts/                 # smoke_test.py + curl_walkthrough.md
 ├── requirements.txt
 └── .env.example
 ```
@@ -72,7 +79,7 @@ Two layers keep it warm:
    `KEEPALIVE_URL` **repo variable** (`Settings → Secrets and variables →
    Actions → Variables`). This one also *wakes* an instance that already slept.
 
-## Endpoints so far
+## Endpoints
 
 | Method | Path         | Purpose                                  |
 |--------|--------------|------------------------------------------|
